@@ -44,9 +44,9 @@ class SeoSnippet {
         if(this.seoData.description !== '') {
             defaultsData.description = this.seoData.description;
         }
-        this.targetElements.title.innerHTML = defaultsData.title;
-        this.targetElements.url.innerHTML = defaultsData.url.replace('REPLACE', defaultsData.slug);
-        this.targetElements.description.innerHTML = defaultsData.description;
+        this.targetElements.title.textContent = defaultsData.title;
+        this.targetElements.url.textContent = defaultsData.url.replace('REPLACE', defaultsData.slug);
+        this.targetElements.description.textContent = defaultsData.description;
     }
 
     initEvents() {
@@ -65,7 +65,7 @@ class SeoSnippet {
         if (this.inputs.slug) {
             this.inputs.slug.addEventListener('keyup', (e) => {
                 const defaultsData = Object.assign({}, this.defaultsData);
-                this.targetElements.url.innerHTML = defaultsData.url.replace('REPLACE', this.inputs.slug.value);
+                this.targetElements.url.textContent = defaultsData.url.replace('REPLACE', this.inputs.slug.value);
             });
         }
 
@@ -82,22 +82,46 @@ class SeoSnippet {
     }
 
     changeTarget(field) {
+        const seoFieldValue = this.seoFieldsInputs[field]
+            ? this.stripHtml(this.seoFieldsInputs[field].value)
+            : '';
+
         if (field === 'title' || field === 'description') {
             if (
                 this.inputs[field] &&
                 this.inputs[field].value.length > 0 &&
-                (!this.seoFieldsInputs[field] || this.seoFieldsInputs[field].value.length === 0)
+                seoFieldValue.length === 0
             ) {
-                this.targetElements[field].innerHTML = this.inputs[field].value;
-            } else if (this.seoFieldsInputs[field] && this.seoFieldsInputs[field].value.length > 0) {
-                this.targetElements[field].innerHTML = this.seoFieldsInputs[field].value;
+                this.targetElements[field].textContent = this.inputs[field].value;
+            } else if (seoFieldValue.length > 0) {
+                this.targetElements[field].textContent = seoFieldValue;
             } else {
-                this.targetElements[field].innerHTML = this.defaultsData[field];
+                this.targetElements[field].textContent = this.defaultsData[field];
             }
         }
 
-        this.seoData[field] = this.seoFieldsInputs[field].value;
-        this.seoField.value = JSON.stringify(this.seoData);
+        this.seoData[field] = seoFieldValue;
+        this.persist();
+    }
+
+    // Strips HTML from every field on save (not just the edited one), so legacy
+    // values stored before this sanitization existed are also cleaned and never
+    // re-persisted with HTML.
+    persist() {
+        const clean = {};
+        Object.keys(this.seoData).forEach((key) => {
+            clean[key] = typeof this.seoData[key] === 'string'
+                ? this.stripHtml(this.seoData[key])
+                : this.seoData[key];
+        });
+        this.seoField.value = JSON.stringify(clean);
+    }
+
+    // Removes all HTML tags from a value (and decodes entities) using an inert
+    // document, so stored SEO data stays plain text. DOMParser does not execute
+    // scripts or load resources, unlike assigning to a detached element's innerHTML.
+    stripHtml(value) {
+        return new DOMParser().parseFromString(value, 'text/html').body.textContent || '';
     }
 }
 
