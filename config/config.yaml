@@ -53,6 +53,7 @@ meta_robots: "index, follow"
 #    homepage:
 #        title: 'Homepage Title'
 #        description: 'Description'
+#        keywords: ''
 #        robots: 'index, follow'
 #        ogtype: website
 #        canonical: ''
@@ -60,6 +61,7 @@ meta_robots: "index, follow"
 #    contact:
 #        title: 'Contact Title'
 #        description: 'Description'
+#        keywords: ''
 #        robots: 'index, nofollow'
 #        ogtype: website
 #        canonical: ''

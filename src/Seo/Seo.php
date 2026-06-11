@@ -76,7 +76,7 @@ class Seo
     {
         $this->initialize();
 
-        if ($this->defaultsOverride && $this->defaultsOverride['title']) {
+        if (! empty($this->defaultsOverride['title'])) {
             return $this->cleanUp($this->defaultsOverride['title'] . $this->postfixTitle());
         }
 
@@ -119,7 +119,7 @@ class Seo
     {
         $this->initialize();
 
-        if ($this->defaultsOverride && $this->defaultsOverride['description']) {
+        if (! empty($this->defaultsOverride['description'])) {
             $description = $this->defaultsOverride['description'];
             return Html::trimText($description, $this->config['description_length']);
         }
@@ -150,7 +150,7 @@ class Seo
     {
         $this->initialize();
 
-        if ($this->defaultsOverride && $this->defaultsOverride['keywords']) {
+        if (! empty($this->defaultsOverride['keywords'])) {
             $keywords = $this->defaultsOverride['keywords'];
             return Html::trimText($keywords, $this->config['keywords_length']);
         }
@@ -173,7 +173,7 @@ class Seo
     {
         $this->initialize();
 
-        if ($this->defaultsOverride && $this->defaultsOverride['ogtype']) {
+        if (! empty($this->defaultsOverride['ogtype'])) {
             return $this->defaultsOverride['ogtype'];
         }
 
@@ -192,7 +192,7 @@ class Seo
     {
         $this->initialize();
 
-        if ($this->defaultsOverride && $this->defaultsOverride['robots']) {
+        if (! empty($this->defaultsOverride['robots'])) {
             return $this->defaultsOverride['robots'];
         }
 
@@ -210,7 +210,7 @@ class Seo
     {
         $this->initialize();
 
-        if ($this->defaultsOverride && $this->defaultsOverride['image']) {
+        if (! empty($this->defaultsOverride['image'])) {
             return $this->defaultsOverride['image'];
         }
 
@@ -236,7 +236,7 @@ class Seo
     {
         $this->initialize();
 
-        if ($this->defaultsOverride && $this->defaultsOverride['canonical']) {
+        if (! empty($this->defaultsOverride['canonical'])) {
             return $this->defaultsOverride['canonical'];
         }
 
