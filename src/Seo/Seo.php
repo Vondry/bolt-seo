@@ -281,8 +281,12 @@ class Seo
         );
     }
 
-    private function cleanUp(string $string): string
+    private function cleanUp(?string $string): string
     {
+        if ($string === null) {
+            return '';
+        }
+
         $string = strip_tags($string);
         $string = str_replace(["\r", "\n"], '', $string);
         $string = preg_replace('/\s+/u', ' ', $string);
