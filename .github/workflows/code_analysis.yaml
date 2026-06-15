@@ -51,6 +51,9 @@ jobs:
           - name: Check composer.json and composer.lock
             run: composer validate --strict --ansi
 
+          - name: PHPUnit
+            run: vendor/bin/phpunit --colors=always
+
     name: ${{ matrix.actions.name }} - PHP ${{ matrix.php-version }}
     runs-on: ubuntu-latest
 
