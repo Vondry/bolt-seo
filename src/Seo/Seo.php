@@ -52,11 +52,11 @@ class Seo
         if (! $this->defaultsOverride && isset($this->config['override_default'])) {
             $overrides = $this->config['override_default'];
             if (isset($overrides[$this->routeType])) {
-                $this->defaultsOverride = $overrides[$this->routeType];
+                $this->defaultsOverride = $this->resolveLocaleOverride($overrides[$this->routeType]);
             } elseif (in_array($this->routeType, ['listing', 'listing_locale'], true)) {
                 $slug = $this->request->get('contentTypeSlug');
                 if ($slug !== null && isset($overrides[$slug])) {
-                    $this->defaultsOverride = $overrides[$slug];
+                    $this->defaultsOverride = $this->resolveLocaleOverride($overrides[$slug]);
                 }
             }
         }
@@ -71,7 +71,7 @@ class Seo
                 if (! $this->record && isset($this->twig->getGlobals()['record'])) {
                     $this->record = $this->twig->getGlobals()['record'];
                     $field = $this->getSeoField($this->record);
-                    $this->seoData = $field && $field->__toString() ? json_decode($field->__toString(), true) : null;
+                    $this->seoData = $field && $field->__toString() ? json_decode($field->__toString(), true) : [];
                 }
                 break;
         }
@@ -288,6 +288,27 @@ class Seo
             $this->config->get('title_separator') !== '' ? $this->config->get('title_separator') : '|',
             $this->config->get('title_postfix') !== '' ? $this->config->get('title_postfix') : $this->boltConfig->get('general/sitename')
         );
+    }
+
+    /**
+     * Merge an optional per-locale override (`locales: { en: { ... } }`) over the
+     * base override for the current request locale. Locale values win; anything not
+     * set for the locale falls back to the base values.
+     *
+     * @param array<string, mixed> $override
+     * @return array<string, mixed>
+     */
+    private function resolveLocaleOverride(array $override): array
+    {
+        if (! isset($override['locales']) || ! is_array($override['locales'])) {
+            return $override;
+        }
+
+        $locale = $this->request->getLocale();
+        $localeOverride = $override['locales'][$locale] ?? [];
+        unset($override['locales']);
+
+        return array_merge($override, is_array($localeOverride) ? $localeOverride : []);
     }
 
     private function cleanUp(?string $string): string
