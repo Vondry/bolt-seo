@@ -88,9 +88,12 @@ class Seo
         switch ($this->routeType) {
             case 'listing':
             case 'listing_locale':
-                return $this->cleanUp(
-                    $this->contentType->get('name') . $this->postfixTitle()
-                );
+                if ($this->contentType) {
+                    return $this->cleanUp(
+                        $this->contentType->get('name') . $this->postfixTitle()
+                    );
+                }
+                break;
             case 'taxonomy':
                 return $this->cleanUp(
                     $this->translator->trans(

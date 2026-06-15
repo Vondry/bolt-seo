@@ -49,7 +49,19 @@ meta_robots: "index, follow"
 
 # You can override default value for specific type of route
 # This take precedence over the SEO fields in content and the default configuration
+#
+# On listing routes (`listing` and the localized `listing_locale`) you can also key
+# overrides by the content type slug. The route-name key takes precedence; if it is
+# absent, the content type slug of the listing is used as a fallback.
 #override_default:
+#    blog:                      # applies on the blog listing (keyed by content type slug)
+#        title: 'Blog Title'
+#        description: 'Description'
+#        keywords: ''
+#        robots: 'index, follow'
+#        ogtype: website
+#        canonical: ''
+#        image: '' # Set absolute Url
 #    homepage:
 #        title: 'Homepage Title'
 #        description: 'Description'
