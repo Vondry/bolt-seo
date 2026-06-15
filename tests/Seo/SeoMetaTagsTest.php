@@ -1,0 +1,214 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Appolo\BoltSeo\Tests\Seo;
+
+use Twig\Environment;
+use Twig\Markup;
+
+/**
+ * Fallback chains for the remaining meta getters (description, keywords, ogtype,
+ * robots, image, canonical), the override "missing key" guard, and metatags().
+ */
+class SeoMetaTagsTest extends SeoTestCase
+{
+    // --- description -------------------------------------------------------
+
+    public function testDescriptionUsesOverride(): void
+    {
+        $seo = $this->makeSeo('record', [
+            'override_default' => ['record' => ['description' => 'Override description']],
+        ]);
+
+        self::assertSame('Override description', $seo->description());
+    }
+
+    public function testDescriptionUsesSeoField(): void
+    {
+        $record = $this->recordWithSeoData(['description' => 'Seo description']);
+        $seo = $this->makeSeo('record', record: $record);
+
+        self::assertSame('Seo description', $seo->description());
+    }
+
+    public function testDescriptionUsesRecordField(): void
+    {
+        $record = $this->record(['description' => 'Record description']);
+        $seo = $this->makeSeo('record', record: $record);
+
+        self::assertSame('Record description', $seo->description());
+    }
+
+    public function testDescriptionFallsBackToConfiguredDefault(): void
+    {
+        $seo = $this->makeSeo('record', [
+            'default' => ['title' => '', 'description' => 'Default description', 'keywords' => ''],
+        ]);
+
+        self::assertSame('Default description', $seo->description());
+    }
+
+    public function testDescriptionFallsBackToPayoff(): void
+    {
+        $seo = $this->makeSeo('record', payoff: 'Our payoff');
+
+        self::assertSame('Our payoff', $seo->description());
+    }
+
+    // --- keywords ----------------------------------------------------------
+
+    public function testKeywordsUseOverride(): void
+    {
+        $seo = $this->makeSeo('record', [
+            'override_default' => ['record' => ['keywords' => 'a, b, c']],
+        ]);
+
+        self::assertSame('a, b, c', $seo->keywords());
+    }
+
+    public function testKeywordsFallBackToConfiguredDefault(): void
+    {
+        $seo = $this->makeSeo('record', ['default' => ['title' => '', 'description' => '', 'keywords' => 'x, y']]);
+
+        self::assertSame('x, y', $seo->keywords());
+    }
+
+    public function testKeywordsDefaultToEmptyString(): void
+    {
+        $seo = $this->makeSeo('record');
+
+        self::assertSame('', $seo->keywords());
+    }
+
+    // --- ogtype ------------------------------------------------------------
+
+    public function testOgtypeUsesOverride(): void
+    {
+        $seo = $this->makeSeo('record', ['override_default' => ['record' => ['ogtype' => 'article']]]);
+
+        self::assertSame('article', $seo->ogtype());
+    }
+
+    public function testOgtypeUsesSeoField(): void
+    {
+        $record = $this->recordWithSeoData(['og' => 'profile']);
+        $seo = $this->makeSeo('record', record: $record);
+
+        self::assertSame('profile', $seo->ogtype());
+    }
+
+    public function testOgtypeDefaultsToWebsite(): void
+    {
+        $seo = $this->makeSeo('record');
+
+        self::assertSame('website', $seo->ogtype());
+    }
+
+    // --- robots ------------------------------------------------------------
+
+    public function testRobotsUsesOverride(): void
+    {
+        $seo = $this->makeSeo('record', ['override_default' => ['record' => ['robots' => 'noindex, nofollow']]]);
+
+        self::assertSame('noindex, nofollow', $seo->robots());
+    }
+
+    public function testRobotsDefaultsToIndexFollow(): void
+    {
+        $seo = $this->makeSeo('record');
+
+        self::assertSame('index, follow', $seo->robots());
+    }
+
+    // --- image -------------------------------------------------------------
+
+    public function testImageUsesOverride(): void
+    {
+        $seo = $this->makeSeo('record', ['override_default' => ['record' => ['image' => 'https://cdn/x.jpg']]]);
+
+        self::assertSame('https://cdn/x.jpg', $seo->image());
+    }
+
+    public function testImageUsesRecordFieldPrefixedWithHost(): void
+    {
+        $record = $this->record(['image' => '/media/cover.jpg']);
+        $seo = $this->makeSeo('record', record: $record);
+
+        self::assertSame('http://localhost/media/cover.jpg', $seo->image());
+    }
+
+    public function testImageFallsBackToRecordExtras(): void
+    {
+        $record = $this->record([], ['image' => ['url' => 'http://cdn/extra.jpg']]);
+        $seo = $this->makeSeo('record', record: $record);
+
+        self::assertSame('http://cdn/extra.jpg', $seo->image());
+    }
+
+    public function testImageDefaultsToEmptyString(): void
+    {
+        $seo = $this->makeSeo('record');
+
+        self::assertSame('', $seo->image());
+    }
+
+    // --- canonical ---------------------------------------------------------
+
+    public function testCanonicalUsesOverride(): void
+    {
+        $seo = $this->makeSeo('record', ['override_default' => ['record' => ['canonical' => 'https://example.test/x']]]);
+
+        self::assertSame('https://example.test/x', $seo->canonical());
+    }
+
+    public function testCanonicalDefaultsToRequestUri(): void
+    {
+        $seo = $this->makeSeo('record');
+
+        self::assertSame('http://localhost/', $seo->canonical());
+    }
+
+    // --- override "missing key" guard (d4617ec) ----------------------------
+
+    public function testOverrideWithMissingKeysDoesNotShortCircuitOtherGetters(): void
+    {
+        // Only `title` is overridden; every other getter must ignore the override
+        // and continue down its own fallback chain instead of erroring.
+        $seo = $this->makeSeo('record', [
+            'override_default' => ['record' => ['title' => 'Only Title']],
+        ], payoff: 'Payoff');
+
+        self::assertSame('Only Title', $seo->title());
+        self::assertSame('Payoff', $seo->description());
+        self::assertSame('', $seo->keywords());
+        self::assertSame('website', $seo->ogtype());
+        self::assertSame('index, follow', $seo->robots());
+        self::assertSame('', $seo->image());
+    }
+
+    // --- metatags ----------------------------------------------------------
+
+    public function testMetatagsRendersTemplateAsMarkup(): void
+    {
+        $captured = [];
+        $twig = $this->createMock(Environment::class);
+        $twig->method('getGlobals')->willReturn([]);
+        $twig->method('render')->willReturnCallback(function (string $template, array $vars) use (&$captured): string {
+            $captured = $vars;
+
+            return '<meta name="rendered">';
+        });
+
+        $seo = $this->makeSeo('record', siteName: 'Acme', twig: $twig);
+        $markup = $seo->metatags();
+
+        self::assertInstanceOf(Markup::class, $markup);
+        self::assertSame('<meta name="rendered">', (string) $markup);
+        self::assertSame(
+            ['title', 'description', 'keywords', 'image', 'robots', 'ogtype', 'canonical'],
+            array_keys($captured)
+        );
+        self::assertSame('Acme', $captured['title']);
+    }
+}
