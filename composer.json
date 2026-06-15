@@ -1,6 +1,6 @@
 {
     "name": "appolodev/bolt-seo",
-    "description": "Bolt 5 - Seo extension",
+    "description": "Bolt - Seo extension",
     "type": "bolt-extension",
     "license": "MIT",
     "authors": [
