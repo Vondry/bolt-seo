@@ -52,6 +52,18 @@ class LocaleRoutingTest extends SeoTestCase
         self::assertSame('My Site', $seo->title());
     }
 
+    public function testRouteNameOverrideTakesPrecedenceOverContentTypeSlug(): void
+    {
+        $seo = $this->makeSeo('listing', [
+            'override_default' => [
+                'listing' => ['title' => 'By route'],
+                'blog' => ['title' => 'By slug'],
+            ],
+        ], contentTypeSlug: 'blog', contentType: $this->contentType('Blog'));
+
+        self::assertSame('By route', $seo->title());
+    }
+
     public function testLocalizedListingHonorsItsOwnRouteNameOverride(): void
     {
         // Route-name overrides are keyed by the exact route, so `listing_locale`
