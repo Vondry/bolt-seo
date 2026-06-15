@@ -58,6 +58,14 @@ class Seo
                 if ($slug !== null && isset($overrides[$slug])) {
                     $this->defaultsOverride = $this->resolveLocaleOverride($overrides[$slug]);
                 }
+            } elseif (is_string($this->routeType) && str_ends_with($this->routeType, '_locale')) {
+                // Localized routes are named `<route>_locale` (e.g. `homepage_locale`).
+                // Fall back to the base route key so a single `homepage` override (with an
+                // optional `locales:` block) covers both the default and localized pages.
+                $baseRoute = mb_substr($this->routeType, 0, -mb_strlen('_locale'));
+                if (isset($overrides[$baseRoute])) {
+                    $this->defaultsOverride = $this->resolveLocaleOverride($overrides[$baseRoute]);
+                }
             }
         }
 

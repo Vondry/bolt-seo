@@ -155,4 +155,64 @@ class LocaleRoutingTest extends SeoTestCase
 
         self::assertSame('Deutscher Titel', $seo->title());
     }
+
+    public function testLocalizedListingSlugOverrideMergesLocale(): void
+    {
+        // On `listing_locale` the slug-keyed override must still merge per-locale
+        // values for the current locale (the localized counterpart of the `listing` case).
+        $seo = $this->makeSeo('listing_locale', [
+            'override_default' => ['blog' => [
+                'title' => 'Base Title',
+                'description' => 'Base description',
+                'locales' => ['en' => ['title' => 'English Title']],
+            ]],
+        ], contentTypeSlug: 'blog', contentType: $this->contentType('Blog'), locale: 'en');
+
+        self::assertSame('English Title', $seo->title());
+        self::assertSame('Base description', $seo->description());
+    }
+
+    // --- `<route>_locale` falls back to its base route override key ---------
+
+    public function testLocalizedRouteFallsBackToBaseRouteOverride(): void
+    {
+        $seo = $this->makeSeo('homepage_locale', [
+            'override_default' => ['homepage' => ['title' => 'Home Override']],
+        ]);
+
+        self::assertSame('Home Override', $seo->title());
+    }
+
+    public function testLocalizedRouteBaseFallbackSupportsLocaleMerge(): void
+    {
+        $seo = $this->makeSeo('homepage_locale', [
+            'override_default' => ['homepage' => [
+                'title' => 'Base',
+                'locales' => ['de' => ['title' => 'Startseite']],
+            ]],
+        ], locale: 'de');
+
+        self::assertSame('Startseite', $seo->title());
+    }
+
+    public function testExactLocalizedRouteOverrideWinsOverBaseRoute(): void
+    {
+        $seo = $this->makeSeo('homepage_locale', [
+            'override_default' => [
+                'homepage_locale' => ['title' => 'Exact'],
+                'homepage' => ['title' => 'Base'],
+            ],
+        ]);
+
+        self::assertSame('Exact', $seo->title());
+    }
+
+    public function testLocalizedRouteWithoutBaseOverrideFallsBackToSitename(): void
+    {
+        $seo = $this->makeSeo('homepage_locale', [
+            'override_default' => ['contact' => ['title' => 'Contact']],
+        ], siteName: 'My Site');
+
+        self::assertSame('My Site', $seo->title());
+    }
 }
