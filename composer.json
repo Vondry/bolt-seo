@@ -14,7 +14,7 @@
         "twig/twig": "^3.21"
     },
     "require-dev": {
-        "bolt/core": "^6.0",
+        "bolt/core": "^6.1.3",
         "phpstan/phpstan": "2.1.33",
         "rector/rector": "2.2.14",
         "symplify/easy-coding-standard": "^13",
