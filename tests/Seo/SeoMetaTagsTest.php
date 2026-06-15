@@ -67,6 +67,14 @@ class SeoMetaTagsTest extends SeoTestCase
         self::assertSame('a, b, c', $seo->keywords());
     }
 
+    public function testKeywordsUseSeoField(): void
+    {
+        $record = $this->recordWithSeoData(['keywords' => 'seo, words']);
+        $seo = $this->makeSeo('record', record: $record);
+
+        self::assertSame('seo, words', $seo->keywords());
+    }
+
     public function testKeywordsFallBackToConfiguredDefault(): void
     {
         $seo = $this->makeSeo('record', ['default' => ['title' => '', 'description' => '', 'keywords' => 'x, y']]);
@@ -74,9 +82,10 @@ class SeoMetaTagsTest extends SeoTestCase
         self::assertSame('x, y', $seo->keywords());
     }
 
-    public function testKeywordsDefaultToEmptyString(): void
+    public function testKeywordsDefaultToEmptyStringWhenNoConfiguredDefault(): void
     {
-        $seo = $this->makeSeo('record');
+        // No `keywords` key under `default` at all -> empty string.
+        $seo = $this->makeSeo('record', ['default' => ['title' => '', 'description' => '']]);
 
         self::assertSame('', $seo->keywords());
     }
@@ -98,6 +107,15 @@ class SeoMetaTagsTest extends SeoTestCase
         self::assertSame('profile', $seo->ogtype());
     }
 
+    public function testOgtypeFallsBackToConfiguredDefault(): void
+    {
+        $seo = $this->makeSeo('record', [
+            'default' => ['title' => '', 'description' => '', 'keywords' => '', 'ogtype' => 'article'],
+        ]);
+
+        self::assertSame('article', $seo->ogtype());
+    }
+
     public function testOgtypeDefaultsToWebsite(): void
     {
         $seo = $this->makeSeo('record');
@@ -110,6 +128,23 @@ class SeoMetaTagsTest extends SeoTestCase
     public function testRobotsUsesOverride(): void
     {
         $seo = $this->makeSeo('record', ['override_default' => ['record' => ['robots' => 'noindex, nofollow']]]);
+
+        self::assertSame('noindex, nofollow', $seo->robots());
+    }
+
+    public function testRobotsUsesSeoField(): void
+    {
+        $record = $this->recordWithSeoData(['robots' => 'noindex, follow']);
+        $seo = $this->makeSeo('record', record: $record);
+
+        self::assertSame('noindex, follow', $seo->robots());
+    }
+
+    public function testRobotsFallsBackToConfiguredDefault(): void
+    {
+        $seo = $this->makeSeo('record', [
+            'default' => ['title' => '', 'description' => '', 'keywords' => '', 'robots' => 'noindex, nofollow'],
+        ]);
 
         self::assertSame('noindex, nofollow', $seo->robots());
     }
@@ -138,10 +173,28 @@ class SeoMetaTagsTest extends SeoTestCase
         self::assertSame('http://localhost/media/cover.jpg', $seo->image());
     }
 
+    public function testImageFallsBackToConfiguredDefault(): void
+    {
+        $seo = $this->makeSeo('record', [
+            'default' => ['title' => '', 'description' => '', 'keywords' => '', 'image' => '/default.jpg'],
+        ]);
+
+        self::assertSame('/default.jpg', $seo->image());
+    }
+
     public function testImageFallsBackToRecordExtras(): void
     {
         $record = $this->record([], ['image' => ['url' => 'http://cdn/extra.jpg']]);
         $seo = $this->makeSeo('record', record: $record);
+
+        self::assertSame('http://cdn/extra.jpg', $seo->image());
+    }
+
+    public function testImageUsesExtrasWhenImageFieldNotConfigured(): void
+    {
+        // `fields` has no `image` mapping -> getField bails early; extras still apply.
+        $record = $this->record(['title' => 'x'], ['image' => ['url' => 'http://cdn/extra.jpg']]);
+        $seo = $this->makeSeo('record', ['fields' => ['title' => ['title']]], record: $record);
 
         self::assertSame('http://cdn/extra.jpg', $seo->image());
     }
@@ -160,6 +213,23 @@ class SeoMetaTagsTest extends SeoTestCase
         $seo = $this->makeSeo('record', ['override_default' => ['record' => ['canonical' => 'https://example.test/x']]]);
 
         self::assertSame('https://example.test/x', $seo->canonical());
+    }
+
+    public function testCanonicalUsesSeoField(): void
+    {
+        $record = $this->recordWithSeoData(['canonical' => 'https://example.test/seo']);
+        $seo = $this->makeSeo('record', record: $record);
+
+        self::assertSame('https://example.test/seo', $seo->canonical());
+    }
+
+    public function testCanonicalFallsBackToConfiguredDefault(): void
+    {
+        $seo = $this->makeSeo('record', [
+            'default' => ['title' => '', 'description' => '', 'keywords' => '', 'canonical' => 'https://example.test/c'],
+        ]);
+
+        self::assertSame('https://example.test/c', $seo->canonical());
     }
 
     public function testCanonicalDefaultsToRequestUri(): void
@@ -210,5 +280,31 @@ class SeoMetaTagsTest extends SeoTestCase
             array_keys($captured)
         );
         self::assertSame('Acme', $captured['title']);
+    }
+
+    public function testMetatagsUsesConfiguredTemplate(): void
+    {
+        $captured = null;
+        $twig = $this->createMock(Environment::class);
+        $twig->method('getGlobals')->willReturn([]);
+        $twig->method('render')->willReturnCallback(function (string $template) use (&$captured): string {
+            $captured = $template;
+
+            return '';
+        });
+
+        $seo = $this->makeSeo('record', ['templates' => ['meta' => '@custom/tags.html.twig']], twig: $twig);
+        $seo->metatags();
+
+        self::assertSame('@custom/tags.html.twig', $captured);
+    }
+
+    public function testCleanUpReturnsEmptyStringForNullSitename(): void
+    {
+        // No override, no default title, and a null sitename/payoff must not error.
+        $seo = $this->makeSeo('record', siteName: null, payoff: null);
+
+        self::assertSame('', $seo->title());
+        self::assertSame('', $seo->description());
     }
 }
