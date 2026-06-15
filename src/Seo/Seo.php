@@ -49,16 +49,29 @@ class Seo
 
     public function initialize(): void
     {
-        if (
-            ! $this->defaultsOverride &&
-            isset($this->config['override_default']) &&
-            isset($this->config['override_default'][$this->routeType])
-        ) {
-            $this->defaultsOverride = $this->config['override_default'][$this->routeType];
+        if (! $this->defaultsOverride && isset($this->config['override_default'])) {
+            $overrides = $this->config['override_default'];
+            if (isset($overrides[$this->routeType])) {
+                $this->defaultsOverride = $this->resolveLocaleOverride($overrides[$this->routeType]);
+            } elseif (in_array($this->routeType, ['listing', 'listing_locale'], true)) {
+                $slug = $this->request->get('contentTypeSlug');
+                if ($slug !== null && isset($overrides[$slug])) {
+                    $this->defaultsOverride = $this->resolveLocaleOverride($overrides[$slug]);
+                }
+            } elseif (is_string($this->routeType) && str_ends_with($this->routeType, '_locale')) {
+                // Localized routes are named `<route>_locale` (e.g. `homepage_locale`).
+                // Fall back to the base route key so a single `homepage` override (with an
+                // optional `locales:` block) covers both the default and localized pages.
+                $baseRoute = mb_substr($this->routeType, 0, -mb_strlen('_locale'));
+                if (isset($overrides[$baseRoute])) {
+                    $this->defaultsOverride = $this->resolveLocaleOverride($overrides[$baseRoute]);
+                }
+            }
         }
 
         switch ($this->routeType) {
             case 'listing':
+            case 'listing_locale':
                 $contentTypeSlug = $this->request->get('contentTypeSlug');
                 $this->contentType = $this->boltConfig->getContentType($contentTypeSlug);
                 break;
@@ -66,7 +79,7 @@ class Seo
                 if (! $this->record && isset($this->twig->getGlobals()['record'])) {
                     $this->record = $this->twig->getGlobals()['record'];
                     $field = $this->getSeoField($this->record);
-                    $this->seoData = $field && $field->__toString() ? json_decode($field->__toString(), true) : null;
+                    $this->seoData = $field && $field->__toString() ? json_decode($field->__toString(), true) : [];
                 }
                 break;
         }
@@ -82,9 +95,13 @@ class Seo
 
         switch ($this->routeType) {
             case 'listing':
-                return $this->cleanUp(
-                    $this->contentType->get('name') . $this->postfixTitle()
-                );
+            case 'listing_locale':
+                if ($this->contentType) {
+                    return $this->cleanUp(
+                        $this->contentType->get('name') . $this->postfixTitle()
+                    );
+                }
+                break;
             case 'taxonomy':
                 return $this->cleanUp(
                     $this->translator->trans(
@@ -279,6 +296,27 @@ class Seo
             $this->config->get('title_separator') !== '' ? $this->config->get('title_separator') : '|',
             $this->config->get('title_postfix') !== '' ? $this->config->get('title_postfix') : $this->boltConfig->get('general/sitename')
         );
+    }
+
+    /**
+     * Merge an optional per-locale override (`locales: { en: { ... } }`) over the
+     * base override for the current request locale. Locale values win; anything not
+     * set for the locale falls back to the base values.
+     *
+     * @param array<string, mixed> $override
+     * @return array<string, mixed>
+     */
+    private function resolveLocaleOverride(array $override): array
+    {
+        if (! isset($override['locales']) || ! is_array($override['locales'])) {
+            return $override;
+        }
+
+        $locale = $this->request->getLocale();
+        $localeOverride = $override['locales'][$locale] ?? [];
+        unset($override['locales']);
+
+        return array_merge($override, is_array($localeOverride) ? $localeOverride : []);
     }
 
     private function cleanUp(?string $string): string

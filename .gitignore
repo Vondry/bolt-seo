@@ -10,3 +10,4 @@ appveyor.yaml
 ### Local files
 vendor/
 var/
+/.phpunit.cache
