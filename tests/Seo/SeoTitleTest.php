@@ -16,7 +16,11 @@ class SeoTitleTest extends SeoTestCase
     public function testOverrideTitleWins(): void
     {
         $seo = $this->makeSeo('homepage', [
-            'override_default' => ['homepage' => ['title' => 'Override']],
+            'override_default' => [
+                'homepage' => [
+                    'title' => 'Override',
+                ],
+            ],
         ]);
 
         self::assertSame('Override', $seo->title());
@@ -34,6 +38,39 @@ class SeoTitleTest extends SeoTestCase
         $seo = $this->makeSeo('listing', contentTypeSlug: 'ghost', contentType: null);
 
         self::assertSame('My Site', $seo->title());
+    }
+
+    public function testSingletonOnListingRouteUsesSeoFieldTitle(): void
+    {
+        // A singleton content type is served on the listing route (its slug equals
+        // the content type slug) but renders a single record exposed as the `record`
+        // global. Its own SEO title must win over the content type name.
+        $record = $this->recordWithSeoData(['title' => 'About Us SEO'], ['title' => 'About']);
+
+        $seo = $this->makeSeo(
+            'listing',
+            contentTypeSlug: 'about',
+            contentType: $this->contentType('About CT'),
+            record: $record,
+        );
+
+        self::assertSame('About Us SEO', $seo->title());
+    }
+
+    public function testSingletonOnListingRouteFallsBackToRecordTitleField(): void
+    {
+        // Singleton record without a SEO title falls back to its title field before
+        // the content type name.
+        $record = $this->record(['title' => 'About Field Title']);
+
+        $seo = $this->makeSeo(
+            'listing',
+            contentTypeSlug: 'about',
+            contentType: $this->contentType('About CT'),
+            record: $record,
+        );
+
+        self::assertSame('About Field Title', $seo->title());
     }
 
     public function testTaxonomyUsesTranslatedOverviewLabel(): void
