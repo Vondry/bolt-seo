@@ -59,6 +59,22 @@ class SeoMetaTagsTest extends SeoTestCase
         self::assertSame('Singleton seo description', $seo->description());
     }
 
+    public function testSingletonOnListingRouteFallsBackToRecordDescriptionField(): void
+    {
+        // A singleton on the listing route without a SEO description falls back to
+        // its own content field before the generic default.
+        $record = $this->record(['description' => 'About record description']);
+        $seo = $this->makeSeo(
+            'listing',
+            contentTypeSlug: 'about',
+            contentType: $this->contentType('About CT'),
+            record: $record,
+            payoff: 'Welcome',
+        );
+
+        self::assertSame('About record description', $seo->description());
+    }
+
     public function testDescriptionFallsBackToConfiguredDefault(): void
     {
         $seo = $this->makeSeo('record', [

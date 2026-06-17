@@ -73,6 +73,23 @@ class SeoTitleTest extends SeoTestCase
         self::assertSame('About Field Title', $seo->title());
     }
 
+    public function testSingletonOnListingLocaleRouteUsesSeoFieldTitle(): void
+    {
+        // The localized listing route (`listing_locale`) forwards a singleton the
+        // same way `listing` does, keeping the `_route` attribute. Its own SEO title
+        // must win over the content type name there too.
+        $record = $this->recordWithSeoData(['title' => 'About Us SEO'], ['title' => 'About']);
+
+        $seo = $this->makeSeo(
+            'listing_locale',
+            contentTypeSlug: 'about',
+            contentType: $this->contentType('About CT'),
+            record: $record,
+        );
+
+        self::assertSame('About Us SEO', $seo->title());
+    }
+
     public function testTaxonomyUsesTranslatedOverviewLabel(): void
     {
         $translator = $this->createMock(TranslatorInterface::class);
