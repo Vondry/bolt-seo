@@ -102,6 +102,18 @@ class SeoTitleTest extends SeoTestCase
         self::assertSame('Blog | Acme', $seo->title());
     }
 
+    public function testPostfixOmitsSeparatorWhenResolvedValueIsEmpty(): void
+    {
+        // No configured postfix and no sitename to fall back to: the resolved postfix
+        // is empty, so the separator must be omitted too (no dangling " | ").
+        $seo = $this->makeSeo('listing', [
+            'title_postfix' => '',
+            'title_separator' => '|',
+        ], contentTypeSlug: 'blog', contentType: $this->contentType('Blog'), siteName: null);
+
+        self::assertSame('Blog', $seo->title());
+    }
+
     public function testCleanUpStripsTagsAndCollapsesWhitespace(): void
     {
         $seo = $this->makeSeo('homepage', [

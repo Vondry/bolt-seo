@@ -182,6 +182,21 @@ class SeoExtensionTest extends TestCase
         self::assertSame('', $extension->seoFieldValue($this->contentWithFields([]), 'postfix'));
     }
 
+    public function testSeoFieldValuePostfixOmitsSeparatorWhenResolvedValueIsEmpty(): void
+    {
+        // No configured postfix and an empty sitename to fall back to: the resolved
+        // postfix is empty, so the separator is omitted too (matching Seo::postfixTitle).
+        $boltConfig = $this->createMock(Config::class);
+        $boltConfig->method('get')->willReturn('');
+
+        $extension = $this->makeExtension(
+            ['title_postfix' => '', 'title_separator' => '|'],
+            boltConfig: $boltConfig
+        );
+
+        self::assertSame('', $extension->seoFieldValue($this->contentWithFields([]), 'postfix'));
+    }
+
     public function testSeoFieldValueUnknownFieldReturnsEmptyString(): void
     {
         $extension = $this->makeExtension(['fields' => []]);
