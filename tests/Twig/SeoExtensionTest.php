@@ -166,13 +166,13 @@ class SeoExtensionTest extends TestCase
         $boltConfig = $this->createMock(Config::class);
         $boltConfig->method('get')->willReturn('Acme');
 
-        // Empty separator -> '-', empty postfix -> sitename.
+        // Empty separator -> '|' (matching Seo::postfixTitle), empty postfix -> sitename.
         $extension = $this->makeExtension(
             ['title_postfix' => '', 'title_separator' => ''],
             boltConfig: $boltConfig
         );
 
-        self::assertSame(' - Acme', $extension->seoFieldValue($this->contentWithFields([]), 'postfix'));
+        self::assertSame(' | Acme', $extension->seoFieldValue($this->contentWithFields([]), 'postfix'));
     }
 
     public function testSeoFieldValuePostfixDisabledReturnsEmptyString(): void

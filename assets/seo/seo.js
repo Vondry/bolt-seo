@@ -7,6 +7,10 @@ class SeoSnippet {
             description: this.container.dataset.baseDescription,
             slug: this.container.dataset.baseSlug,
         };
+        // The server resolves the title postfix (separator + postfix/sitename) exactly
+        // like the live <title>. Append it to the preview title so the snippet matches
+        // what the extension actually renders in the browser.
+        this.titlePostfix = this.container.dataset.baseTitlePostfix || '';
         this.targetElements = {
             url: document.querySelector('.seo_snippet span.url'),
             title: document.querySelector('.seo_snippet .title'),
@@ -44,7 +48,7 @@ class SeoSnippet {
         if(this.seoData.description !== '') {
             defaultsData.description = this.seoData.description;
         }
-        this.targetElements.title.textContent = defaultsData.title;
+        this.targetElements.title.textContent = defaultsData.title + this.titlePostfix;
         this.targetElements.url.textContent = defaultsData.url.replace('REPLACE', defaultsData.slug);
         this.targetElements.description.textContent = defaultsData.description;
     }
@@ -87,17 +91,23 @@ class SeoSnippet {
             : '';
 
         if (field === 'title' || field === 'description') {
+            let value;
             if (
                 this.inputs[field] &&
                 this.inputs[field].value.length > 0 &&
                 seoFieldValue.length === 0
             ) {
-                this.targetElements[field].textContent = this.inputs[field].value;
+                value = this.inputs[field].value;
             } else if (seoFieldValue.length > 0) {
-                this.targetElements[field].textContent = seoFieldValue;
+                value = seoFieldValue;
             } else {
-                this.targetElements[field].textContent = this.defaultsData[field];
+                value = this.defaultsData[field];
             }
+
+            // The postfix only applies to the title, never the description.
+            this.targetElements[field].textContent = field === 'title'
+                ? value + this.titlePostfix
+                : value;
         }
 
         this.seoData[field] = seoFieldValue;
