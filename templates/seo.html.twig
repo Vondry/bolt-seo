@@ -47,7 +47,7 @@
                 name="{{ name }}[title]"
                 class="form-control"
                 id="seofields-title"
-                maxlength="255"
+                maxlength="{{ seoconfig.title_length|default(60) }}"
                 type="text"
                 value="{{ seovalues.title|default('') }}"
             />
@@ -55,7 +55,7 @@
 
         <div id="field-{{ name }}-title_postfix" class="form--helper">
             <p>{{ __("Will be used as the <tt>&lt;title&gt;</tt> and in search engines") }}.
-                {{ __("Limit the length to %number% characters", {'%number%': seoconfig.title_length|default(70)}) }}.</p>
+                {{ __("Limit the length to %number% characters", {'%number%': seoconfig.title_length|default(60)}) }}.</p>
         </div>
     </div>
 {% endblock %}
@@ -71,6 +71,7 @@
                 name="{{ name }}[description]"
                 class="form-control"
                 id="seofields-description"
+                maxlength="{{ seoconfig.description_length|default(158) }}"
                 style="height: 80px;"
             >{{ seovalues.description|default('') }}</textarea>
         </div>
@@ -95,6 +96,7 @@
                         name="{{ name }}[keywords]"
                         class="form-control"
                         id="seofields-keywords"
+                        maxlength="{{ keywords_length }}"
                         style="height: 80px;"
                 >
                     {{ seovalues.keywords|default('') }}
