@@ -109,5 +109,17 @@
         <target><![CDATA[Utilisez ceci pour remplacer la balise <tt>&lt;meta name="og:type"&gt;</tt>]]></target>
       </segment>
     </unit>
+    <unit id="z9KeyMt" name="Meta keywords">
+      <segment>
+        <source>Meta keywords</source>
+        <target>Meta mots-clés</target>
+      </segment>
+    </unit>
+    <unit id="z9KeyHl" name="Will be used as the &lt;tt&gt;&amp;lt;meta name=&quot;keywords&quot;&amp;gt;&lt;/tt&gt;, and will show up in &lt;em&gt;some&lt;/em&gt; search engines. Use comma separated tags only">
+      <segment>
+        <source>Will be used as the &lt;tt&gt;&amp;lt;meta name="keywords"&amp;gt;&lt;/tt&gt;, and will show up in &lt;em&gt;some&lt;/em&gt; search engines. Use comma separated tags only</source>
+        <target><![CDATA[Sera utilisé comme <tt>&lt;meta name="keywords"&gt;</tt>, et apparaîtra dans <em>certains</em> moteurs de recherche. Utilisez uniquement des balises séparées par des virgules]]></target>
+      </segment>
+    </unit>
   </file>
 </xliff>
