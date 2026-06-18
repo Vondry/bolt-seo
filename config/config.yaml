@@ -8,7 +8,7 @@ title_postfix: ''
 # The length used for the title and meta description. Note that increasing these values
 # will _not_ make them appear as longer snippets in Google.
 # Set a value (i.e. 255) for the `keywords_length`, to enable the meta keywords option.
-title_length: 70
+title_length: 60
 description_length: 158
 keywords_length: 0 #255
 

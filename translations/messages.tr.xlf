@@ -109,5 +109,17 @@
         <target><![CDATA[<tt>&lt;meta name="og:type"&gt;</tt> belirlemek için kullanılır]]></target>
       </segment>
     </unit>
+    <unit id="z9KeyMt" name="Meta keywords">
+      <segment>
+        <source>Meta keywords</source>
+        <target>Meta anahtar kelimeler</target>
+      </segment>
+    </unit>
+    <unit id="z9KeyHl" name="Will be used as the &lt;tt&gt;&amp;lt;meta name=&quot;keywords&quot;&amp;gt;&lt;/tt&gt;, and will show up in &lt;em&gt;some&lt;/em&gt; search engines. Use comma separated tags only">
+      <segment>
+        <source>Will be used as the &lt;tt&gt;&amp;lt;meta name="keywords"&amp;gt;&lt;/tt&gt;, and will show up in &lt;em&gt;some&lt;/em&gt; search engines. Use comma separated tags only</source>
+        <target><![CDATA[<tt>&lt;meta name="keywords"&gt;</tt> olarak kullanılacak ve <em>bazı</em> arama motorlarında görünecektir. Yalnızca virgülle ayrılmış etiketler kullanın]]></target>
+      </segment>
+    </unit>
   </file>
 </xliff>

@@ -109,5 +109,17 @@
         <target><![CDATA[Použijte k nastavení <tt>&lt;meta name="og:type"&gt;</tt>]]></target>
       </segment>
     </unit>
+    <unit id="z9KeyMt" name="Meta keywords">
+      <segment>
+        <source>Meta keywords</source>
+        <target>Meta klíčová slova</target>
+      </segment>
+    </unit>
+    <unit id="z9KeyHl" name="Will be used as the &lt;tt&gt;&amp;lt;meta name=&quot;keywords&quot;&amp;gt;&lt;/tt&gt;, and will show up in &lt;em&gt;some&lt;/em&gt; search engines. Use comma separated tags only">
+      <segment>
+        <source>Will be used as the &lt;tt&gt;&amp;lt;meta name="keywords"&amp;gt;&lt;/tt&gt;, and will show up in &lt;em&gt;some&lt;/em&gt; search engines. Use comma separated tags only</source>
+        <target><![CDATA[Bude použito jako <tt>&lt;meta name="keywords"&gt;</tt> a zobrazí se v <em>některých</em> vyhledávačích. Používejte pouze značky oddělené čárkami]]></target>
+      </segment>
+    </unit>
   </file>
 </xliff>
