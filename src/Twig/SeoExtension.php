@@ -78,13 +78,24 @@ class SeoExtension extends AbstractExtension
 
                 return $seoField ?: $description;
             case 'postfix':
+                // Mirror Seo::postfixTitle() exactly so the admin preview matches the
+                // live <title>: an empty separator falls back to `|` (not `-`), and an
+                // empty postfix falls back to the sitename. When the resolved postfix
+                // is empty (no postfix and no sitename) the separator is omitted too —
+                // there is nothing to separate.
                 if ($this->getExtensionConfig()->get('title_postfix') !== false) {
-                    $titleSeparator = $this->getExtensionConfig()->get('title_separator') ?: '-';
-
                     $titlePostfix = $this->getExtensionConfig()->get('title_postfix') !== ''
                         ? $this->getExtensionConfig()->get('title_postfix')
                         : $this->config->get('general/sitename')
                     ;
+
+                    if ($titlePostfix === null || $titlePostfix === '') {
+                        return '';
+                    }
+
+                    $titleSeparator = $this->getExtensionConfig()->get('title_separator') !== ''
+                        ? $this->getExtensionConfig()->get('title_separator')
+                        : '|';
 
                     return " {$titleSeparator} {$titlePostfix}";
                 }

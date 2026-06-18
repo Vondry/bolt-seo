@@ -319,11 +319,22 @@ class Seo
         if ($this->config->get('title_postfix') === false) {
             return '';
         }
-        return sprintf(
-            ' %s %s',
-            $this->config->get('title_separator') !== '' ? $this->config->get('title_separator') : '|',
-            $this->config->get('title_postfix') !== '' ? $this->config->get('title_postfix') : $this->boltConfig->get('general/sitename')
-        );
+
+        $postfix = $this->config->get('title_postfix') !== ''
+            ? $this->config->get('title_postfix')
+            : $this->boltConfig->get('general/sitename');
+
+        // Nothing to append (no configured postfix and no sitename): omit the
+        // separator too — there is nothing to separate.
+        if ($postfix === null || $postfix === '') {
+            return '';
+        }
+
+        $separator = $this->config->get('title_separator') !== ''
+            ? $this->config->get('title_separator')
+            : '|';
+
+        return sprintf(' %s %s', $separator, $postfix);
     }
 
     /**
