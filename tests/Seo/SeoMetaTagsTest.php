@@ -18,7 +18,11 @@ class SeoMetaTagsTest extends SeoTestCase
     public function testDescriptionUsesOverride(): void
     {
         $seo = $this->makeSeo('record', [
-            'override_default' => ['record' => ['description' => 'Override description']],
+            'override_default' => [
+                'record' => [
+                    'description' => 'Override description',
+                ],
+            ],
         ]);
 
         self::assertSame('Override description', $seo->description());
@@ -38,6 +42,37 @@ class SeoMetaTagsTest extends SeoTestCase
         $seo = $this->makeSeo('record', record: $record);
 
         self::assertSame('Record description', $seo->description());
+    }
+
+    public function testSingletonOnListingRouteUsesSeoFieldDescription(): void
+    {
+        // A singleton served on the listing route must expose its own SEO
+        // description, not fall back to the generic default.
+        $record = $this->recordWithSeoData(['description' => 'Singleton seo description']);
+        $seo = $this->makeSeo(
+            'listing',
+            contentTypeSlug: 'about',
+            contentType: $this->contentType('About CT'),
+            record: $record,
+        );
+
+        self::assertSame('Singleton seo description', $seo->description());
+    }
+
+    public function testSingletonOnListingRouteFallsBackToRecordDescriptionField(): void
+    {
+        // A singleton on the listing route without a SEO description falls back to
+        // its own content field before the generic default.
+        $record = $this->record(['description' => 'About record description']);
+        $seo = $this->makeSeo(
+            'listing',
+            contentTypeSlug: 'about',
+            contentType: $this->contentType('About CT'),
+            record: $record,
+            payoff: 'Welcome',
+        );
+
+        self::assertSame('About record description', $seo->description());
     }
 
     public function testDescriptionFallsBackToConfiguredDefault(): void

@@ -50,30 +50,34 @@ class SeoSnippet {
     }
 
     initEvents() {
+        // Listen on `input` rather than `keyup` so the snippet preview and the
+        // persisted JSON stay in sync for every way a value can change — not just
+        // physical key presses, but also paste, browser autofill, and programmatic
+        // updates (e.g. automated form filling), all of which fire `input` but not
+        // `keyup`.
         if (this.inputs.title) {
-            this.inputs.title.addEventListener('keyup', (e) => {
+            this.inputs.title.addEventListener('input', (e) => {
                 this.changeTarget('title');
             });
         }
 
         if (this.inputs.description) {
-            this.inputs.description.addEventListener('keyup', (e) => {
+            this.inputs.description.addEventListener('input', (e) => {
                 this.changeTarget('description');
             });
         }
 
         if (this.inputs.slug) {
-            this.inputs.slug.addEventListener('keyup', (e) => {
+            this.inputs.slug.addEventListener('input', (e) => {
                 const defaultsData = Object.assign({}, this.defaultsData);
                 this.targetElements.url.textContent = defaultsData.url.replace('REPLACE', this.inputs.slug.value);
             });
         }
 
         Object.keys(this.seoFieldsInputs).forEach((key) => {
-            let eventName = 'keyup';
-            if (key === 'robots') {
-                eventName = 'change';
-            }
+            // `robots` is a <select>; the rest are text inputs/areas. `change`
+            // covers selects, `input` covers all text edits including paste/autofill.
+            const eventName = key === 'robots' ? 'change' : 'input';
 
             this.seoFieldsInputs[key].addEventListener(eventName, (e) => {
                 this.changeTarget(key);

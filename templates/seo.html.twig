@@ -49,7 +49,7 @@
                 id="seofields-title"
                 maxlength="{{ seoconfig.title_length|default(60) }}"
                 type="text"
-                value="{{ seovalues.title|default('') }}"
+                value="{{ seovalues.title|default('')|trim }}"
             />
         </div>
 
@@ -73,7 +73,7 @@
                 id="seofields-description"
                 maxlength="{{ seoconfig.description_length|default(158) }}"
                 style="height: 80px;"
-            >{{ seovalues.description|default('') }}</textarea>
+            >{{- seovalues.description|default('')|trim -}}</textarea>
         </div>
 
         <div id="field-{{ name }}-description_postfix" class="form--helper">
@@ -98,9 +98,7 @@
                         id="seofields-keywords"
                         maxlength="{{ keywords_length }}"
                         style="height: 80px;"
-                >
-                    {{ seovalues.keywords|default('') }}
-                </textarea>
+                >{{- seovalues.keywords|default('')|trim -}}</textarea>
             </div>
 
             <div id="field-{{ name }}-keywords_postfix" class="form--helper">
@@ -162,7 +160,7 @@
                     id="seofields-shortlink"
                     maxlength="255"
                     type="text"
-                    value="{{ seovalues.shortlink|default('') }}"
+                    value="{{ seovalues.shortlink|default('')|trim }}"
             />
         </div>
 
@@ -188,7 +186,7 @@
                     id="seofields-canonical"
                     maxlength="255"
                     type="text"
-                    value="{{ seovalues.canonical|default('') }}"
+                    value="{{ seovalues.canonical|default('')|trim }}"
             />
         </div>
 
@@ -244,7 +242,7 @@
                     id="seofields-og"
                     maxlength="255"
                     type="text"
-                    value="{{ seovalues.og|default('') }}"
+                    value="{{ seovalues.og|default('')|trim }}"
             />
         </div>
 

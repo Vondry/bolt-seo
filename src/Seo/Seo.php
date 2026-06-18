@@ -74,15 +74,29 @@ class Seo
             case 'listing_locale':
                 $contentTypeSlug = $this->request->get('contentTypeSlug');
                 $this->contentType = $this->boltConfig->getContentType($contentTypeSlug);
+                // A singleton content type is served on the listing route (its slug
+                // equals the content type slug), but it renders a single record and
+                // exposes a `record` global just like a detail route. Honour that
+                // record's own SEO field instead of only the content type defaults.
+                // Real collection listings expose `records` (plural), not `record`,
+                // so they are unaffected and keep using the content type name.
+                $this->loadRecordSeoFromTwig();
                 break;
             default:
-                if (! $this->record && isset($this->twig->getGlobals()['record'])) {
-                    $this->record = $this->twig->getGlobals()['record'];
-                    $field = $this->getSeoField($this->record);
-                    $this->seoData = $field && $field->__toString() ? json_decode($field->__toString(), true) : [];
-                }
+                $this->loadRecordSeoFromTwig();
                 break;
         }
+    }
+
+    private function loadRecordSeoFromTwig(): void
+    {
+        if ($this->record || ! isset($this->twig->getGlobals()['record'])) {
+            return;
+        }
+
+        $this->record = $this->twig->getGlobals()['record'];
+        $field = $this->getSeoField($this->record);
+        $this->seoData = $field && $field->__toString() ? json_decode($field->__toString(), true) : [];
     }
 
     public function title(): string
@@ -96,6 +110,20 @@ class Seo
         switch ($this->routeType) {
             case 'listing':
             case 'listing_locale':
+                // A singleton rendered on the listing route carries its own SEO
+                // field and title; prefer those before falling back to the content
+                // type name (which is all a real collection listing has).
+                if ($this->seoData && isset($this->seoData['title']) && $this->seoData['title'] !== '') {
+                    return $this->cleanUp($this->seoData['title'] . $this->postfixTitle());
+                }
+
+                if ($this->record) {
+                    $field = $this->getField($this->record, 'title');
+                    if ($field && $field->__toString() !== '') {
+                        return $this->cleanUp($field->__toString() . $this->postfixTitle());
+                    }
+                }
+
                 if ($this->contentType) {
                     return $this->cleanUp(
                         $this->contentType->get('name') . $this->postfixTitle()
