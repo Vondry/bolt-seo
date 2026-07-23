@@ -17,11 +17,33 @@ class SeoField extends Field implements Excerptable, FieldInterface, RawPersista
     public const TYPE = 'seo';
 
     /**
-     * Override getTwigValue to render field as html
+     * Render the field as HTML markup.
+     *
+     * This field is RawPersistable, so Bolt skips its sanitiser on save, and the
+     * value is emitted unescaped (as Markup) wherever it is rendered, e.g.
+     * `{{ record.seo }}`. Strip HTML from every stored string so editor-supplied
+     * markup can never execute (stored XSS) — the browser-side stripping in
+     * seo.js is only advisory and is bypassed by posting the field raw.
+     *
+     * The payload is kept as valid JSON so the front-end SEO service, which
+     * decodes this same value, keeps working.
      */
     public function getTwigValue()
     {
-        $value = $this->getParsedValue();
+        $value = (string) $this->getParsedValue();
+        $decoded = json_decode($value, true);
+
+        if (is_array($decoded)) {
+            array_walk_recursive($decoded, static function (&$item): void {
+                if (is_string($item)) {
+                    $item = strip_tags($item);
+                }
+            });
+            $value = (string) json_encode($decoded, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        } else {
+            // Not an object (corrupt or legacy value): never emit it as live markup.
+            $value = strip_tags($value);
+        }
 
         return new Markup($value, 'UTF-8');
     }
