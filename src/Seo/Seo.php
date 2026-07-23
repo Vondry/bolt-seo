@@ -96,7 +96,11 @@ class Seo
 
         $this->record = $this->twig->getGlobals()['record'];
         $field = $this->getSeoField($this->record);
-        $this->seoData = $field && $field->__toString() ? json_decode($field->__toString(), true) : [];
+        $decoded = $field && $field->__toString() ? json_decode($field->__toString(), true) : [];
+        // The `seo` field is RawPersistable and unvalidated: it may hold non-object
+        // JSON (a scalar, null, or invalid JSON decoding to null). Only an array is
+        // usable here, and assigning anything else to the typed property would fatal.
+        $this->seoData = is_array($decoded) ? $decoded : [];
     }
 
     public function title(): string
