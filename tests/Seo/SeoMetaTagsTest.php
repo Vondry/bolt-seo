@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Appolo\BoltSeo\Tests\Seo;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Twig\Environment;
 use Twig\Markup;
 
@@ -290,6 +291,40 @@ class SeoMetaTagsTest extends SeoTestCase
         self::assertSame('website', $seo->ogtype());
         self::assertSame('index, follow', $seo->robots());
         self::assertSame('', $seo->image());
+    }
+
+    // --- malformed seo field JSON ------------------------------------------
+
+    /**
+     * The `seo` field is `RawPersistable`: whatever is submitted is stored
+     * verbatim, so it can hold non-object JSON (a scalar, `null`, or plain
+     * garbage) if an editor tampers with the hidden input or the value is
+     * imported. Decoding that must not be assigned to the `array`-typed
+     * $seoData property (a TypeError => HTTP 500 on the public page); it must
+     * fall back down the normal chain instead.
+     */
+    #[DataProvider('malformedSeoJsonProvider')]
+    public function testMalformedSeoFieldJsonFallsBackInsteadOfCrashing(string $storedValue): void
+    {
+        $record = $this->record(['seo' => $storedValue, 'title' => 'Record title']);
+        $seo = $this->makeSeo('record', record: $record, payoff: 'Payoff');
+
+        self::assertSame('Record title', $seo->title());
+        self::assertSame('Payoff', $seo->description());
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function malformedSeoJsonProvider(): array
+    {
+        return [
+            'plain garbage' => ['not valid json'],
+            'json string scalar' => ['"just a string"'],
+            'json number scalar' => ['123'],
+            'json bool scalar' => ['true'],
+            'json null literal' => ['null'],
+        ];
     }
 
     // --- metatags ----------------------------------------------------------
