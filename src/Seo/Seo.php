@@ -373,9 +373,9 @@ class Seo
 
         $string = strip_tags($string);
         $string = str_replace(["\r", "\n"], '', $string);
-        $string = preg_replace('/\s+/u', ' ', $string);
-
-        return $string;
+        // preg_replace() returns null on failure (e.g. malformed UTF-8 input);
+        // fall back to the un-collapsed string rather than emitting `null`.
+        return preg_replace('/\s+/u', ' ', $string) ?? $string;
     }
 
     private function getField(Content $content, string $field): ?Field
