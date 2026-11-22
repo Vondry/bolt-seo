@@ -1,16 +1,21 @@
-### Platfom-specific files
+### OS files
 .DS_Store
-thumbs.db
-Vagrantfile
-.vagrant*
-.idea
-.vscode/*
-appveyor.yaml
+Thumbs.db
 
-### Local files
-vendor/
-var/
-/.phpunit.cache
+### IDEs and editors
+.idea/
+.vscode/
 
-### Node
-node_modules/
+### Local AI tooling
+.bob/
+.claude/settings.local.json
+
+### Dependencies (a library does not commit composer.lock; package-lock.json is committed)
+/vendor/
+/node_modules/
+/composer.lock
+
+### Caches, logs and test output
+/var/
+/.phpunit.cache/
+/.phpunit.result.cache
